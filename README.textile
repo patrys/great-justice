@@ -1,0 +1,11 @@
+h1. How are you gentlemen !!
+
+This module provides an easy way to debug broken code.
+
+h2. What you say !!
+
+bc. from great_justice import what_happen
+try:
+    # ...
+except:
+    what_happen()
