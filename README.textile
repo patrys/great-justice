@@ -1,8 +1,8 @@
-h1. How are you gentlemen !!
+h1. How are you gentlemen _!!_
 
 This module provides an easy way to debug broken code.
 
-h2. What you say !!
+h2. What you say _!!_
 
 bc. from great_justice import what_happen
 try:
