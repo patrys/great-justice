@@ -9,3 +9,10 @@ try:
     # ...
 except:
     what_happen()
+
+Or make it even better:
+
+bc. from great_justice import take_your_time
+
+with take_your_time():
+    # ...
