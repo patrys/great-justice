@@ -13,6 +13,17 @@ except:
 Or make it even better:
 
 bc. from great_justice import take_your_time
-
 with take_your_time():
     # ...
+
+To get a nice debug log:
+
+bc. DEBUG:root:一体どうしたと言んだ！
+DEBUG:root:  File "test.py", line 12, in <module>
+DEBUG:root:    do_test()
+DEBUG:root:      do_test = <function do_test at 0x7f8d1dc538c0>
+DEBUG:root:  File "test.py", line 9, in do_test
+DEBUG:root:    foo = bar + baz
+DEBUG:root:      foo = 1
+DEBUG:root:      baz = 'test'
+DEBUG:root:      global name 'bar' is not defined
