@@ -7,7 +7,7 @@ import os
 import re
 import sys
 
-VERSION = (2011, 9, 0, 'final', 0)
+VERSION = (2012, 4, 0, 'final', 0)
 IDENTIFIER_RE = re.compile('\W')
 
 logger = logging.getLogger('CATS')
