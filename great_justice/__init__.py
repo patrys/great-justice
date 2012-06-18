@@ -14,9 +14,7 @@ import sys
 import textwrap
 import traceback
 
-from termcolor import colored
-
-VERSION = (2012, 6, 2, 'final', 0)
+VERSION = (2012, 6, 3, 'final', 0)
 
 def get_version():
     '''
@@ -31,6 +29,8 @@ def get_version():
         if VERSION[3] != 'final':
             version = '%s %s %s' % (version, VERSION[3], VERSION[4])
     return version
+
+from termcolor import colored
 
 
 class Structure(object):
