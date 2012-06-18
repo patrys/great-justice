@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 from setuptools import setup, find_packages
 
-version = __import__('great_justice').get_version()
-
 CLASSIFIERS = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
@@ -13,26 +11,17 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Topic :: Software Development :: Debuggers',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-]
+    'Topic :: Software Development :: Libraries :: Python Modules']
 
-PACKAGE_DATA = {}
-
-REQUIREMENTS = [
-    'termcolor >= 1.0.0',
-]
-
-EXTRAS = {}
+REQUIREMENTS = ['termcolor >= 1.0.0']
 
 setup(name='great-justice',
       author='Patryk Zawadzki',
       author_email='patrys@gmail.com',
       description='Debug every ZIG',
-      version = version,
+      version = '2012.6.4',
       packages = find_packages(),
-      package_data=PACKAGE_DATA,
       classifiers=CLASSIFIERS,
       install_requires=REQUIREMENTS,
-      extras_require=EXTRAS,
       platforms=['any'],
       zip_safe=True)
