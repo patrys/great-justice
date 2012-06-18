@@ -18,15 +18,7 @@ with take_your_time():
 
 Results:
 
-bc. 一体どうしたと言んだ！
-File "test.py", line 12, in <module>
-  do_test()
-    do_test = <function do_test at 0x7f8d1dc538c0>
-File "test.py", line 9, in do_test
-  foo = bar + baz
-    foo = 1
-    baz = 'test'
-NameError: global name 'bar' is not defined
+<a href="http://www.flickr.com/photos/patrys/7393195160/" title="great-justice 2012.6 by patrys, on Flickr"><img src="http://farm9.staticflickr.com/8151/7393195160_a3f112f62f_o.png" width="561" height="182" alt="great-justice 2012.6"></a>
 
 To get a nice debug log just pass a logger object:
 
