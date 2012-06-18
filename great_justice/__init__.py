@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
+'''
+great-justice:
+
+A more useful alternative to regular stack traces.
+'''
+
+import ast
 import contextlib
 import linecache
-import os
 import pprint
-import re
 import sys
 import textwrap
 import traceback
@@ -12,9 +17,11 @@ import traceback
 from termcolor import colored
 
 VERSION = (2012, 6, 0, 'final', 0)
-IDENTIFIER_RE = re.compile('\W')
 
 def get_version():
+    '''
+    Returns module version
+    '''
     version = '%s.%s' % (VERSION[0], VERSION[1])
     if VERSION[2]:
         version = '%s.%s' % (version, VERSION[2])
@@ -27,7 +34,9 @@ def get_version():
 
 
 class Structure(object):
-
+    '''
+    Basic structure for formatting output
+    '''
     attrs = {}
 
     def __init__(self, value):
@@ -37,6 +46,9 @@ class Structure(object):
         return u''.join(unicode(arg) for arg in self.args)
 
     def prettyformat(self):
+        '''
+        The colorful version of __unicode__
+        '''
         return colored(
             u''.join(arg.prettyformat()
             if isinstance(arg, Structure) else unicode(arg)
@@ -44,52 +56,72 @@ class Structure(object):
 
 
 class WhatHappen(Structure):
-
+    '''
+    The welcome message
+    '''
     attrs = {'color': 'red'}
     args = [u'一体どうしたと言んだ！']
 
     def __init__(self):
+        # pylint: disable=W0231
         pass
 
 
 class VariableName(Structure):
-
+    '''
+    A variable's name
+    '''
     attrs = {'color': 'yellow'}
 
 
 class VariableValue(Structure):
-
+    '''
+    A variable's value
+    '''
     attrs = {'color': 'green'}
 
 
 class ShortVariable(Structure):
-
+    '''
+    A single-line variable
+    '''
     def __init__(self, variable_name, variable_value):
+        # pylint: disable=W0231
         self.args = [VariableName(variable_name),
                      ' = ',
                      VariableValue(variable_value)]
 
 
 class LongVariable(Structure):
-
+    '''
+    A multi-line variable
+    '''
     def __init__(self, variable_name):
+        # pylint: disable=W0231
         self.args = [VariableName(variable_name),
                      ' = \\']
 
 
 class Code(Structure):
-
+    '''
+    A piece of code
+    '''
     attrs = {'attrs': ['bold']}
 
 
 class CodeFileName(Structure):
-
+    '''
+    A filename
+    '''
     attrs = {'attrs': ['bold']}
 
 
 class CodeLine(Structure):
-
+    '''
+    A code reference
+    '''
     def __init__(self, filename, line_no, object_name):
+        # pylint: disable=W0231
         self.args = [u'File "',
                      CodeFileName(filename),
                      u'", line ',
@@ -99,43 +131,75 @@ class CodeLine(Structure):
 
 
 class CodeLineNo(Structure):
-
+    '''
+    A line no. in code reference
+    '''
     attrs = {'attrs': ['bold']}
 
 
 class CodeObjectName(Structure):
-
+    '''
+    A context in code reference
+    '''
     attrs = {'attrs': ['bold']}
 
 
 class ExceptionValue(Structure):
-
+    '''
+    The exception
+    '''
     attrs = {'color': 'red', 'attrs': ['reverse']}
 
 
-def what_happen(logger=None):
-    def log(info, indent=0):
-        if logger:
-            lines = unicode(info).splitlines()
-            for line in lines:
-                logger.debug('  ' * indent + line)
+def _get_code(filename, lineno, module_globals):
+    '''
+    Instead of providing the last line of a multi-line expression,
+    try to provide a valid context by looking for a smallest chunk
+    of code that can be compiled
+    '''
+    linecache.checkcache(filename)
+    code = linecache.getline(filename, lineno, module_globals)
+    if not code:
+        return None, []
+    tree = None
+    tokens = []
+    lines = 0
+    while True:
+        try:
+            tree = ast.parse(textwrap.dedent(code) + '\n')
+        except SyntaxError:
+            if not lineno or lines > 10:
+                break
+            lines += 1
+            prev_line = linecache.getline(filename, lineno - lines,
+                                          module_globals)
+            code = prev_line + code
         else:
-            lines = info.prettyformat().splitlines()
-            for line in lines:
-                print '  ' * indent + line
-    def get_code(filename, lineno, module_globals):
-        linecache.checkcache(filename)
-        code = linecache.getline(filename, lineno, module_globals)
-        if code:
-            without_comments = code.split('#', 1)[0]
-            while without_comments.count(')') > without_comments.count('('):
-                lineno -= 1
-                prev_line = linecache.getline(filename, lineno, module_globals)
-                code = prev_line + code
-                without_comments = prev_line.strip().split('#', 1)[0] + '\n' + without_comments
-            return textwrap.dedent(code)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Name):
+                    tokens.append(node.id)
+            break
+    return textwrap.dedent(code.strip()), tokens
 
-    log(WhatHappen())
+def _log(logger, info, indent=0):
+    '''
+    Either log a clean version of info or print its colorful version
+    if no logger is provided
+    '''
+    if logger:
+        lines = unicode(info).splitlines()
+        for line in lines:
+            logger.debug('  ' * indent + line)
+    else:
+        lines = info.prettyformat().splitlines()
+        for line in lines:
+            print '  ' * indent + line
+
+def what_happen(logger=None):
+    '''
+    Print information about the current stack trace
+    '''
+    _log(logger, WhatHappen())
     exc_type, exc_value, trace = sys.exc_info()
     while trace:
         frame = trace.tb_frame
@@ -146,39 +210,41 @@ def what_happen(logger=None):
         local_base = __file__.rsplit('.', 1)[0]
         if filename_base == local_base:
             continue
-        struct = CodeLine(filename, frame.f_lineno, frame.f_code.co_name)
-        log(struct)
-        line = get_code(filename, frame.f_lineno, frame.f_globals)
-        
+        _log(logger, CodeLine(filename, frame.f_lineno, frame.f_code.co_name))
+        line, tokens = _get_code(filename, frame.f_lineno, frame.f_globals)
         if line:
-            line = line.strip()
-            tokens = IDENTIFIER_RE.split(line)
-            log(Code(line), indent=1)
+            _log(logger, Code(line), indent=1)
             for key, value in frame.f_locals.items():
                 if key in tokens:
                     try:
                         value = pprint.pformat(value, width=60)
-                    except Exception:
-                        log(
+                    except Exception: # pylint: disable=W0703
+                        _log(
+                            logger,
                             ShortVariable(
                                 key,
                                 '<EXCEPTION RAISED WHILE TRYING TO PRINT>'),
                             indent=2)
                     else:
                         if value.count('\n'):
-                            log(LongVariable(key), indent=2)
-                            log(VariableValue(value), indent=3)
+                            _log(logger, LongVariable(key), indent=2)
+                            _log(logger, VariableValue(value), indent=3)
                         else:
-                            log(ShortVariable(key, value), indent=2)
-    log(
+                            _log(logger, ShortVariable(key, value), indent=2)
+    _log(
+        logger,
         ExceptionValue(
             ''.join(traceback.format_exception(exc_type, exc_value,
                                                trace)).strip()))
 
 @contextlib.contextmanager
 def take_your_time(logger=None):
+    '''
+    Trap errors occuring inside this context processor and print them
+    using what_happen
+    '''
     try:
         yield
-    except:
+    except Exception: # pylint: disable=W0703
         what_happen(logger=logger)
         raise
