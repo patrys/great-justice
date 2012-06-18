@@ -59,17 +59,38 @@ def log(logger, info, indent=0):
         for line in lines:
             print '  ' * indent + line
 
-def log_frame(logger, frame):
+def log_call(logger, frame, indent=0):
     '''
-    Parse and log a single frame of a traceback
+    Displays the filename and line no.
     '''
     filename = inspect.getsourcefile(frame)
     log(logger,
-        structure.CodeLine(filename, frame.f_lineno, frame.f_code.co_name))
+        structure.CodeLine(filename, frame.f_lineno),
+        indent=indent)
+
+def log_invocation(logger, frame, indent=0):
+    '''
+    Displays the filename, line no. and the function being called
+    along with its params
+    '''
+    log_call(logger, frame, indent=indent)
+    arguments = dict(
+        (key, pprint.pformat(
+            frame.f_locals.get(key, frame.f_globals.get(key))))
+        for key in frame.f_code.co_varnames)
+    log(logger,
+        structure.Call(frame.f_code.co_name, arguments),
+        indent=indent)
+
+def log_frame(logger, frame, indent=0):
+    '''
+    Parse and log a single frame of a traceback
+    '''
+    log_call(logger, frame, indent=indent)
     code = get_source(frame)
     missing = object()
     if code:
-        log(logger, structure.Code(code), indent=1)
+        log(logger, structure.Code(code), indent=indent+1)
         for key in sorted(frame.f_code.co_varnames):
             value = frame.f_locals.get(
                 key,
@@ -84,14 +105,14 @@ def log_frame(logger, frame):
                         structure.ShortVariable(
                             key,
                             '<EXCEPTION RAISED WHILE TRYING TO PRINT>'),
-                        indent=2)
+                        indent=indent+2)
                 else:
                     if value.count('\n'):
-                        log(logger, structure.LongVariable(key), indent=2)
-                        log(logger, structure.Value(value), indent=3)
+                        log(logger, structure.LongVariable(key),
+                            indent=indent+2)
+                        log(logger, structure.Value(value), indent=indent+3)
                     else:
                         log(logger, structure.ShortVariable(key, value),
-                            indent=2)
+                            indent=indent+2)
             else:
-                log(logger, structure.UndefinedVariable(key), indent=2)
-
+                log(logger, structure.UndefinedVariable(key), indent=indent+2)
