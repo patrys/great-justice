@@ -104,10 +104,4 @@ class Signal(object):
         return self.log_call
 
 
-@contextlib.contextmanager
-def we_get_signal(logger):
-    '''
-    Trace and log the call tree and its result
-    '''
-    with Signal(logger):
-        yield
+we_get_signal = Signal
