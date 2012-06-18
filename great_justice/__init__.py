@@ -16,7 +16,7 @@ import traceback
 
 from termcolor import colored
 
-VERSION = (2012, 6, 1, 'final', 0)
+VERSION = (2012, 6, 2, 'final', 0)
 
 def get_version():
     '''
