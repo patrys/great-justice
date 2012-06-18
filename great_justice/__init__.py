@@ -74,11 +74,18 @@ class VariableName(Structure):
     attrs = {'color': 'yellow'}
 
 
-class VariableValue(Structure):
+class Value(Structure):
     '''
     A variable's value
     '''
     attrs = {'color': 'green'}
+
+
+class UndefinedValue(Structure):
+    '''
+    An undefined value
+    '''
+    attrs = {'color': 'red'}
 
 
 class ShortVariable(Structure):
@@ -89,7 +96,7 @@ class ShortVariable(Structure):
         # pylint: disable=W0231
         self.args = [VariableName(variable_name),
                      ' = ',
-                     VariableValue(variable_value)]
+                     Value(variable_value)]
 
 
 class LongVariable(Structure):
@@ -100,6 +107,17 @@ class LongVariable(Structure):
         # pylint: disable=W0231
         self.args = [VariableName(variable_name),
                      ' = \\']
+
+
+class UndefinedVariable(Structure):
+    '''
+    A variable we could not determine value of
+    '''
+    def __init__(self, variable_name):
+        # pylint: disable=W0231
+        self.args = [VariableName(variable_name),
+                     ' = ',
+                     UndefinedValue('<undefined>')]
 
 
 class Code(Structure):
@@ -214,8 +232,11 @@ def what_happen(logger=None):
         line, tokens = _get_code(filename, frame.f_lineno, frame.f_globals)
         if line:
             _log(logger, Code(line), indent=1)
-            for key, value in frame.f_locals.items():
-                if key in tokens:
+            for key in tokens:
+                value = (frame.f_locals.get(key) or
+                         frame.f_globals.get(key) or
+                         frame.f_builtins.get(key))
+                if value:
                     try:
                         value = pprint.pformat(value, width=60)
                     except Exception: # pylint: disable=W0703
@@ -228,9 +249,11 @@ def what_happen(logger=None):
                     else:
                         if value.count('\n'):
                             _log(logger, LongVariable(key), indent=2)
-                            _log(logger, VariableValue(value), indent=3)
+                            _log(logger, Value(value), indent=3)
                         else:
                             _log(logger, ShortVariable(key, value), indent=2)
+                else:
+                    _log(logger, UndefinedVariable(key), indent=2)
     _log(
         logger,
         ExceptionValue(
