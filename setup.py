@@ -19,7 +19,7 @@ CLASSIFIERS = [
 PACKAGE_DATA = {}
 
 REQUIREMENTS = [
-    'django >= 1.3',
+    'termcolor >= 1.0.0',
 ]
 
 EXTRAS = {}
