@@ -45,8 +45,8 @@ def what_happen(logger=None):
     utils.log(
         logger,
         structure.ExceptionValue(
-            ''.join(traceback.format_exception(exc_type, exc_value,
-                                               trace)).strip()))
+            ''.join(traceback.format_exception_only(exc_type,
+                                                    exc_value)).strip()))
 
 @contextlib.contextmanager
 def take_your_time(logger=None):
@@ -98,8 +98,8 @@ class Signal(object):
             utils.log(
                 self.logger, structure.ExceptionValue(
                     ''.join(
-                        traceback.format_exception(
-                            arg[0], arg[1], None)).strip()),
+                        traceback.format_exception_only(arg[0],
+                                                        arg[1])).strip()),
                 indent=self._indent)
         return self.log_call
 

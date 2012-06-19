@@ -102,12 +102,39 @@ class UndefinedVariable(Structure):
                      UndefinedValue(u'<undefined>')]
 
 
+class CurrentLine(Structure):
+    '''
+    The highlighted line of code
+    '''
+    # pylint: disable=R0903
+    attrs = {'color': 'white'}
+
+
+class CodeLine(Structure):
+    '''
+    The regular lines
+    '''
+    # pylint: disable=R0903
+    attrs = {'color': 'white', 'attrs': ['dark']}
+
+
 class Code(Structure):
     '''
     A piece of code
     '''
     # pylint: disable=R0903
-    attrs = {'attrs': ['bold']}
+    def __init__(self, prefix, line, suffix):
+        self.args = []
+        for pl in prefix:
+            self.args.append(u'  ')
+            self.args.append(CodeLine(pl))
+            self.args.append(u'\n')
+        self.args.append(u'→ ')
+        self.args.append(CurrentLine(line))
+        for sl in suffix:
+            self.args.append(u'\n')
+            self.args.append(u'  ')
+            self.args.append(CodeLine(sl))
 
 
 class CodeFileName(Structure):
@@ -118,17 +145,27 @@ class CodeFileName(Structure):
     attrs = {'attrs': ['bold']}
 
 
-class CodeLine(Structure):
+class CodeScope(Structure):
+    '''
+    A scope name (function, <module> etc.)
+    '''
+    # pylint: disable=R0903
+    attrs = {'attrs': ['bold']}
+
+
+class FileReference(Structure):
     '''
     A code reference
     '''
     # pylint: disable=R0903
-    def __init__(self, filename, line_no):
+    def __init__(self, filename, line_no, scope):
         # pylint: disable=W0231
         self.args = [u'File "',
                      CodeFileName(filename),
                      u'", line ',
-                     CodeLineNo(line_no)]
+                     CodeLineNo(line_no),
+                     u', in ',
+                     CodeScope(scope)]
 
 
 class CodeLineNo(Structure):

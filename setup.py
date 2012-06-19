@@ -10,6 +10,7 @@ CLASSIFIERS = [
     'Programming Language :: Python',
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.2',
     'Topic :: Software Development :: Debuggers',
     'Topic :: Software Development :: Libraries :: Python Modules']
 
@@ -19,9 +20,10 @@ setup(name='great-justice',
       author='Patryk Zawadzki',
       author_email='patrys@gmail.com',
       description='Debug every ZIG',
-      version = '2012.6.7',
+      version = '2012.6.8',
       packages = find_packages(),
       classifiers=CLASSIFIERS,
       install_requires=REQUIREMENTS,
       platforms=['any'],
+      use_2to3 = True,
       zip_safe=True)
