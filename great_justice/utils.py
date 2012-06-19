@@ -17,11 +17,11 @@ def get_source(obj):
     filename = inspect.getsourcefile(obj)
     linecache.checkcache(filename)
     lineno = inspect.getlineno(obj)
-    prefix = [linecache.getline(filename, ln).strip('\r\n') or u'~'
-              for ln in range(lineno-2, lineno)]
+    prefix = [(linecache.getline(filename, ln) or u'~').strip('\r\n')
+              for ln in range(lineno-3, lineno)]
     current = linecache.getline(filename, lineno).strip('\r\n')
-    suffix = [linecache.getline(filename, ln).strip('\r\n') or u'~'
-              for ln in range(lineno+1, lineno+3)]
+    suffix = [(linecache.getline(filename, ln) or u'~').strip('\r\n')
+              for ln in range(lineno+1, lineno+4)]
     return prefix, current, suffix
 
 def log(logger, info, indent=0):
