@@ -59,6 +59,13 @@ class Value(Structure):
     attrs = {'color': 'green'}
 
 
+class Duration(Structure):
+    '''
+    A time span
+    '''
+    # pylint: disable=R0903
+    attrs = {'color': 'white', 'attrs': ['dark']}
+
 class UndefinedValue(Structure):
     '''
     An undefined value
@@ -213,6 +220,6 @@ class CallReturn(Structure):
     A value is being returned
     '''
     # pylint: disable=R0903
-    def __init__(self, value):
+    def __init__(self, value, duration):
         # pylint: disable=W0231
-        self.args = [u'… = ', Value(value)]
+        self.args = [u'… = ', Value(value), ' ', Duration(duration)]

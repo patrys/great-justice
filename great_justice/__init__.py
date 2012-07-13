@@ -10,6 +10,7 @@ import contextlib
 import inspect
 import pprint
 import sys
+import time
 import traceback
 
 from . import structure
@@ -69,9 +70,11 @@ class Signal(object):
     logger = None
     _old_trace = None
     _indent = 0
+    _timers = None
 
     def __init__(self, logger=None):
         self.logger = logger
+        self._timers = []
 
     def __enter__(self):
         self._old_trace = sys.gettrace()
@@ -89,9 +92,11 @@ class Signal(object):
                 return
             utils.log_invocation(self.logger, frame, indent=self._indent)
             self._indent += 1
+            self._timers.append(time.time())
         elif event == 'return':
             self._indent -= 1
-            utils.log(self.logger, structure.CallReturn(arg),
+            duration = '(%.5f s)' % (time.time() - self._timers.pop(), )
+            utils.log(self.logger, structure.CallReturn(arg, duration),
                       indent=self._indent)
         elif event == 'exception':
             utils.log_call(self.logger, frame, indent=self._indent)
